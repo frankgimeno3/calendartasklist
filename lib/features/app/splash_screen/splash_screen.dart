@@ -14,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     Future.delayed(
-        Duration(seconds: 3),(){
+        const Duration(seconds: 4),(){
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => widget.child!), (route) => false);
     }
     );
@@ -24,12 +24,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Text(
-          "Welcome To Flutter Firebase",
+          "Welcome To Sharoku",
           style: TextStyle(
-            color: Colors.blue,
+            color: Colors.purple,
             fontWeight: FontWeight.bold,
           ),
         ),

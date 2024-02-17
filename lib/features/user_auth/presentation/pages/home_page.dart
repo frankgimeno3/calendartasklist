@@ -20,12 +20,54 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text("HomePage"),
+          title: const Text("HomePage"),
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              GestureDetector(
+                onTap: () {
+                   showToast(message: "This should open the calendar");
+                },
+                child: Container(
+                  height: 45,
+                  width: 100,
+                  decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.circular(10)),
+                  child: const Center(
+                    child: Text(
+                      "Calendar",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  showToast(message: "This should open the task list");
+                },
+                child: Container(
+                  height: 45,
+                  width: 100,
+                  decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.circular(10)),
+                  child: const Center(
+                    child: Text(
+                      "Task list",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
               GestureDetector(
                 onTap: () {
                   _createData(UserModel(
@@ -38,9 +80,9 @@ class _HomePageState extends State<HomePage> {
                   height: 45,
                   width: 100,
                   decoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: Colors.purple,
                       borderRadius: BorderRadius.circular(10)),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       "Create Data",
                       style: TextStyle(
@@ -51,17 +93,17 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               StreamBuilder<List<UserModel>>(
                   stream: _readData(),
                   builder: (context, snapshot) {
                     if(snapshot.connectionState == ConnectionState.waiting){
-                      return Center(child: CircularProgressIndicator(),);
+                      return const Center(child: CircularProgressIndicator(),);
                     } if(snapshot.data!.isEmpty){
-                      return Center(child:Text("No Data Yet"));
+                      return const Center(child:Text("No Data Yet"));
                     }
                     final users = snapshot.data;
-                    return Padding(padding: EdgeInsets.all(8),
+                    return Padding(padding: const EdgeInsets.all(8),
                       child: Column(
                           children: users!.map((user) {
                             return ListTile(
@@ -69,7 +111,7 @@ class _HomePageState extends State<HomePage> {
                                 onTap: (){
                                   _deleteData(user.id!);
                                 },
-                                child: Icon(Icons.delete),
+                                child: const Icon(Icons.delete),
                               ),
                               trailing: GestureDetector(
                                 onTap: (){
@@ -80,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                                         adress: "Pakistan",)
                                   );
                                 },
-                                child: Icon(Icons.update),
+                                child: const Icon(Icons.update),
                               ),
                               title: Text(user.username!),
                               subtitle: Text(user.adress!),
@@ -89,7 +131,6 @@ class _HomePageState extends State<HomePage> {
                       ),);
                   }
               ),
-
               GestureDetector(
                 onTap: () {
                   FirebaseAuth.instance.signOut();
@@ -100,9 +141,9 @@ class _HomePageState extends State<HomePage> {
                   height: 45,
                   width: 100,
                   decoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: Colors.purple,
                       borderRadius: BorderRadius.circular(10)),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       "Sign out",
                       style: TextStyle(
@@ -112,7 +153,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-              )
+              ),
+
             ],
           ),
         ));
