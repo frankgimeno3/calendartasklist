@@ -7,6 +7,7 @@ import 'package:flutter_firebase/features/user_auth/presentation/pages/home_page
 import 'package:flutter_firebase/features/user_auth/presentation/pages/login_page.dart';
 import 'package:flutter_firebase/features/user_auth/presentation/pages/sign_up_page.dart';
 import 'package:flutter_firebase/features/user_auth/presentation/pages/task_list.dart';
+import 'package:flutter_firebase/features/user_auth/presentation/pages/calendar.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/signUp': (context) => const SignUpPage(),
         '/home': (context) => const HomePage(),
         '/task_list': (context) => const TaskListPage(),
+        '/calendar': (context) => const CalendarPage(),
       },
     );
   }
