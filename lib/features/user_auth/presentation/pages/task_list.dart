@@ -1,8 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class TaskListPage extends StatelessWidget {
+class TaskListPage extends StatefulWidget {
   const TaskListPage({Key? key}) : super(key: key);
+
+  @override
+  _TaskListPageState createState() => _TaskListPageState();
+}
+
+class _TaskListPageState extends State<TaskListPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _taskController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _taskController.dispose();
+    _dateController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,116 +31,91 @@ class TaskListPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GestureDetector(
-              onTap: () {
+            _buildInputField("Enter name", _nameController),
+            _buildInputField("Enter task", _taskController),
+            _buildInputField("Enter date", _dateController),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
                 _createData(UserModel(
-                  username: "Henry",
-                  age: 21,
-                  adress: "London",
+                  name: _nameController.text,
+                  task: _taskController.text,
+                  date: int.tryParse(_dateController.text) ?? 0,
                 ));
               },
-              child: Container(
-                height: 45,
-                width: 100,
-                decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.circular(10)),
-                child: const Center(
-                  child: Text(
-                    "Create Data",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
-                  ),
-                ),
-              ),
+              child: const Text("Create Data"),
             ),
-            const SizedBox(height: 10),
-            StreamBuilder<List<UserModel>>(
-                stream: _readData(),
-                builder: (context, snapshot) {
-                  if(snapshot.connectionState == ConnectionState.waiting){
-                    return const Center(child: CircularProgressIndicator(),);
-                  } if(snapshot.data!.isEmpty){
-                    return const Center(child:Text("No Data Yet"));
-                  }
-                  final users = snapshot.data;
-                  return Padding(padding: const EdgeInsets.all(8),
-                    child: Column(
-                        children: users!.map((user) {
-                          return ListTile(
-                            leading: GestureDetector(
-                              onTap: (){
-                                _deleteData(user.id!);
-                              },
-                              child: const Icon(Icons.delete),
-                            ),
-                            trailing: GestureDetector(
-                              onTap: (){
-                                _updateData(
-                                    UserModel(
-                                      id: user.id,
-                                      username: "John Wick",
-                                      adress: "Pakistan",)
-                                );
-                              },
-                              child: const Icon(Icons.update),
-                            ),
-                            title: Text(user.username!),
-                            subtitle: Text(user.adress!),
-                          );
-                        }).toList()
-                    ),);
-                }
+            const SizedBox(height: 20),
+            Expanded(
+              child: _buildUserList(),
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, "/home");
-              },
-              child: Container(
-                height: 45,
-                width: 100,
-                decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.circular(10)),
-                child: const Center(
-                  child: Text(
-                    "Go back",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
-                  ),
-                ),
-              ),
-            ),
+            const SizedBox(height: 20),
+
           ],
         ),
       ),
     );
   }
 
+  Widget _buildInputField(String placeholder, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: placeholder,
+        ),
+      ),
+    );
+  }
 
-  Stream<List<UserModel>> _readData(){
+  Widget _buildUserList() {
+    return StreamBuilder<List<UserModel>>(
+      stream: _readData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        final users = snapshot.data ?? [];
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+            return ListTile(
+              title: Text(user.name ?? ''),
+              subtitle: Text(user.task ?? ''),
+              trailing: Text(user.date != null ? _formatDate(user.date!) : ''),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _formatDate(int date) {
+    // Convert integer date to a DateTime object
+    DateTime dateTime = DateTime.parse(date.toString().padLeft(8, '0'));
+
+    // Format the DateTime object to a readable string
+    return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+  }
+
+  Stream<List<UserModel>> _readData() {
     final userCollection = FirebaseFirestore.instance.collection("users");
 
-    return userCollection.snapshots().map((qureySnapshot)
-    => qureySnapshot.docs.map((e)
-    => UserModel.fromSnapshot(e),).toList());
+    return userCollection.snapshots().map((querySnapshot) =>
+        querySnapshot.docs.map((e) => UserModel.fromSnapshot(e)).toList());
   }
 
   void _createData(UserModel userModel) {
     final userCollection = FirebaseFirestore.instance.collection("users");
 
-    String id = userCollection.doc().id;
+    final id = userCollection.doc().id; // Use final instead of String
 
-    final newUser = UserModel(
-      username: userModel.username,
-      age: userModel.age,
-      adress: userModel.adress,
-      id: id,
-    ).toJson();
+    final newUser = userModel.toJson();
 
     userCollection.doc(id).set(newUser);
   }
@@ -131,50 +123,44 @@ class TaskListPage extends StatelessWidget {
   void _updateData(UserModel userModel) {
     final userCollection = FirebaseFirestore.instance.collection("users");
 
-    final newData = UserModel(
-      username: userModel.username,
-      id: userModel.id,
-      adress: userModel.adress,
-      age: userModel.age,
-    ).toJson();
+    final newData = userModel.toJson();
 
-    userCollection.doc(userModel.id).update(newData);
-
+    if (userModel.id != null) {
+      userCollection.doc(userModel.id!).update(newData);
+    }
   }
 
-  void _deleteData(String id) {
-    final userCollection = FirebaseFirestore.instance.collection("users");
-
-    userCollection.doc(id).delete();
-
+  void _deleteData(String? id) {
+    if (id != null) {
+      final userCollection = FirebaseFirestore.instance.collection("users");
+      userCollection.doc(id).delete();
+    }
   }
-
 }
 
-class UserModel{
-  final String? username;
-  final String? adress;
-  final int? age;
+class UserModel {
+  final String? name;
+  final String? task;
+  final int? date;
   final String? id;
 
-  UserModel({this.id,this.username, this.adress, this.age});
+  UserModel({this.id, this.name, this.task, this.date});
 
-
-  static UserModel fromSnapshot(DocumentSnapshot<Map<String, dynamic>> snapshot){
+  static UserModel fromSnapshot(DocumentSnapshot<Map<String, dynamic>> snapshot) {
     return UserModel(
-      username: snapshot['username'],
-      adress: snapshot['adress'],
-      age: snapshot['age'],
-      id: snapshot['id'],
+      name: snapshot.data()?['name'],
+      task: snapshot.data()?['task'],
+      date: snapshot.data()?['date'],
+      id: snapshot.id, // Accessing document ID directly
     );
   }
 
-  Map<String, dynamic> toJson(){
+  Map<String, dynamic> toJson() {
     return {
-      "username": username,
-      "age": age,
+      "name": name,
+      "task": task,
       "id": id,
-      "adress": adress,
+      "date": date,
     };
   }
 }
