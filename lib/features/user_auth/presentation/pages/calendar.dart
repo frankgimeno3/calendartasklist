@@ -55,7 +55,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Calendar"),
+        title: const Text("Calendario"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
